@@ -13,8 +13,9 @@ namespace _1erParcial.Models
 
         [Required(ErrorMessage =("es obligatorio introducir una descripcion"))]
         public string Descripcion { get; set; }
-        [Range(minimum:100, maximum:1000000)]
         public int Existencia { get; set; }
+
+        [Range(minimum:10, maximum:1000000)]
         public double Costo { get; set; }
         public double Inventaria { get; set; }
     }
