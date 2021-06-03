@@ -8,8 +8,8 @@ using _1erParcial.DAL;
 namespace _1erParcial.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20210603012901_Migrations")]
-    partial class Migrations
+    [Migration("20210603013221_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -2,7 +2,7 @@
 
 namespace _1erParcial.Migrations
 {
-    public partial class Migrations : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
