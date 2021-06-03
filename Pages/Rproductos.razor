@@ -1,0 +1,156 @@
+﻿@using _1erParcial.Models;
+@using _1erParcial.BLL;
+@page "/Rproductos"
+
+@inject IToastService toast
+
+<EditForm Model="productos" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="row d-flex justify-content-center">
+
+        <div class="col-md-6 col-sm-11 col-11">
+
+            <div class="card mt-1">
+                
+                <div class="card-header">
+                    <h3>Registro de productos</h3>
+                </div>
+
+                <div class="card-body">
+                    <form>
+
+                        <div class="mb-3">
+                            <label class="form-label">ProductoId</label>
+                            <InputNumber class="form-control" @bind-Value="productos.ProductoId" />
+                            <button class="btn btn-warning" type="button" @onclick="Buscar">
+                                <i class="oi oi-magnifying-glass" /> Buscar
+                            </button>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripcion</label>
+                            <InputText class="form-control" @bind-Value="productos.Descripcion" />
+                            <ValidationMessage For="(()=> productos.Descripcion)" />
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label">Existencia</label>
+                            <InputNumber @bind-Value="productos.Existencia" class="form-control" @onfocus="Calculo" @onfocusout="Calculo" @oninput="Calculo" />
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="from-label">Costo</label>
+                            <InputNumber @bind-Value="productos.Costo" class="form-control" @onfocus="Calculo" @onfocusout="Calculo" @oninput="Calculo" />
+                            <ValidationMessage For="(() => productos.Costo)" />
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label">Inventario</label>
+                            <InputNumber @bind-Value="productos.Inventaria" class="form-control" readonly />
+                        </div>
+
+
+                    </form>
+                </div>
+
+                <div class="card-footer">
+
+
+                    <div class="container">
+
+                        <div class="row justify-content-center">
+
+                            <button class="col btn btn-primary mx-2 my-2" type="button" @onclick="Nuevo">
+                                <i class="oi oi-file mr-2" />Nuevo
+                            </button>
+
+                            <button class="col btn btn-success mx-2 my-2 " type="button" @onclick="Guardar">
+                                <i class="oi oi-account-login" style="transform:rotate(90deg)" /> Guardar
+                            </button>
+
+                            <button class="col btn btn-danger mx-2 my-2" type="button" @onclick="Eliminar">
+                                <i class="oi oi-trash mr-2" />Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    string Mensaje = string.Empty;
+
+
+    private Productos Productos { get; set; }
+
+
+    public int ProductoId { get; set; }
+
+    Productos productos = new Productos();
+
+    protected override void OnInitialized()
+    {
+        Nuevo();
+    }
+
+
+
+    private void Buscar()
+    {
+        var encontrado = ProductosBLL.Buscar(productos.ProductoId);
+
+        if (encontrado != null)
+            this.productos = encontrado;
+        else
+            toast.ShowWarning("Producto no encontrado");
+    }
+    public void Nuevo()
+    {
+        Limpiar();
+    }
+
+    public void Guardar()
+    {
+        bool guardado = ProductosBLL.Guardar(productos);
+
+        if (guardado)
+        {
+            Nuevo();
+            toast.ShowSuccess("Producto guardado correctamente");
+        }
+        else
+            toast.ShowError("No se pudo guardar el Producto");
+    }
+
+    public void Eliminar()
+    {
+        bool eliminado = ProductosBLL.Eliminar(productos.ProductoId);
+
+        if (eliminado)
+        {
+            Nuevo();
+            toast.ShowSuccess("Producto eliminado correctamente");
+        }
+        else
+            toast.ShowError("No se pudo eliminar el producto");
+    }
+
+    private void Calculo()
+    {
+        productos.Inventaria = productos.Costo * productos.Existencia;
+    }
+
+    public void Limpiar()
+    {
+        productos = new Productos();
+        this.ProductoId = 0;
+    }
+
+}
