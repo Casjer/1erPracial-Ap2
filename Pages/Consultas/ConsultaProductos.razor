@@ -1,0 +1,148 @@
+﻿@using _1erParcial.BLL;
+@using _1erParcial.Models;
+@page "/ConsultaProductos"
+@inject NavigationManager Nav
+@inject IToastService toast
+@inject IJSRuntime Confirmacion
+
+<div class="card">
+    <div class="card-header">
+        <div class="form-row mb-3 mt-3">
+            <div class="col-sm-4">
+                <h3>Consulta Productos</h3>
+            </div>
+            <div class="col-sm-3">
+                <select @bind="indexSelect" class="custom-select">
+                    <option value="0">Filtrar por</option>
+                    <option value="1">ProductoId</option>
+                    <option value="2">Descripcion</option>
+                </select>
+            </div>
+            <div class="col-sm-3">
+                <input class="form-control w-100" type="@(indexSelect == 1 ? "number" : "text")" @bind="criterioDeBusqueda" />
+            </div>
+            <div class="col-sm-2">
+                <button class="btn btn-dark" @onclick="FiltrarProductos">Buscar</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Productos == null || ProductosFiltrados == null)
+        {
+            <div>
+                <h4>Cargando...</h4>
+            </div>
+        }
+        else
+        {
+            <table class="table table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Producto Id</th>
+                        <th>Descripcion</th>
+                        <th>Precio</th>
+                        <th>Existencia</th>
+                        <th>Valor Inventario</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var producto in ProductosFiltrados)
+                    {
+                        <tr>
+                            <td>@producto.ProductoId</td>
+                            <td>@producto.Descripcion</td>
+                            <td>@string.Format("{0:c}", producto.Costo)</td>
+                            <td>@producto.Existencia</td>
+                            <td>@string.Format("{0:c}", producto.Inventaria)</td>
+
+                            <td>
+                                <button @onclick="() => Editar(producto.ProductoId)" class="btn btn-primary oi oi-pencil"></button>
+                                <button @onclick="() => Eliminar(producto.ProductoId)" class="btn btn-danger oi oi-trash"></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+
+
+@code {
+
+    int indexSelect = 0; //indice del select
+    string criterioDeBusqueda;
+
+    public List<Productos> Productos { get; set; }
+    public List<Productos> ProductosFiltrados { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Actualizar();
+    }
+
+    void Actualizar()
+    {
+        Productos = ProductosBLL.GetList(p => true).ToList();
+
+    }
+
+    void Editar(int id)
+    {
+        Nav.NavigateTo($"Rproduct/{id}");
+
+
+    }
+    async Task Eliminar(int id)
+    {
+        Nav.ToAbsoluteUri($"Rproduct/{id}");
+
+        bool confirmed = await Confirmacion.InvokeAsync<bool>("confirm", "Estas seguro de que deseas eliminar este Producto?");
+        if (confirmed)
+        {
+            bool eliminado;
+            eliminado = ProductosBLL.Eliminar(id);
+
+            if (eliminado)
+            {
+                Actualizar();
+                toast.ShowSuccess("Registro Eliminado exitosamente.");
+            }
+            else
+                toast.ShowError("No fue posible Eliminar este Registro.");
+            return;
+        }
+        return;
+    }
+
+
+    void FiltrarProductos()
+    {
+
+        if (indexSelect == 0)
+        {
+
+            ProductosFiltrados = Productos.Where(p => true).ToList();
+
+        }
+        else if (indexSelect == 1)
+        {
+
+            if (int.TryParse(criterioDeBusqueda, out int Id))
+            {
+
+                ProductosFiltrados = Productos.Where(p => p.ProductoId == Id).ToList();
+            }
+
+        }
+        else if (indexSelect == 2)
+        {
+
+            ProductosFiltrados = Productos.Where(p => p.Descripcion.ToLower().Contains(criterioDeBusqueda.ToLower())).ToList();
+
+        }
+    }
+
+}
